@@ -1,0 +1,23 @@
+{
+  "canisters": {
+    "honest": {
+      "main": "src/honest/Main.mo",
+      "type": "motoko"
+    },
+    "website": {
+      "frontend": {
+        "entrypoint": "index.html"
+      },
+      "source": ["src/web-client/out"],
+      "type": "assets"
+    }
+  },
+  "dfx": "0.10.1",
+  "networks": {
+    "local": {
+      "bind": "127.0.0.1:8000",
+      "type": "ephemeral"
+    }
+  },
+  "version": 1
+}
