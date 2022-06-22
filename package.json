@@ -14,27 +14,11 @@
   "description": "Internet Computer starter application",
   "packageManager": "yarn@3.2.1",
   "scripts": {
-    "build": "yarn workspace @honest-ticket-machine/web-client run build && webpack",
+    "build": "yarn workspace @honest-ticket-machine/web-client run build",
     "prebuild": "rm -rf src/web-client/out && npm run copy:types",
-    "start": "webpack serve --mode development --env development",
+    "start:web": "yarn workspace @honest-ticket-machine/web-client run dev",
     "prestart": "npm run copy:types",
     "copy:types": "rsync -avr .dfx/$(echo ${DFX_NETWORK:-'**'})/canisters/** --exclude='assets/' --exclude='idl/' --exclude='*.wasm' --exclude='*.most' --delete src/declarations"
-  },
-  "devDependencies": {
-    "@dfinity/agent": "0.11.3",
-    "@dfinity/candid": "0.11.3",
-    "@dfinity/principal": "0.11.3",
-    "assert": "2.0.0",
-    "buffer": "6.0.3",
-    "events": "3.3.0",
-    "html-webpack-plugin": "5.5.0",
-    "process": "0.11.10",
-    "stream-browserify": "3.0.0",
-    "terser-webpack-plugin": "5.2.5",
-    "util": "0.12.4",
-    "webpack": "5.72.0",
-    "webpack-cli": "4.9.2",
-    "webpack-dev-server": "^4.8.1"
   },
   "engines": {
     "node": "^12 || ^14 || ^16 || ^18"

@@ -1,16 +1,19 @@
 import { AuthClient } from "@dfinity/auth-client";
+import { useRouter } from "next/router";
 import React, { createContext, useContext, useEffect, useState } from "react";
 
 const nullPromise: Promise<void> = new Promise(() => {});
 
 export interface LoggedInIdentity {
   logout: () => Promise<void>;
+  loading: boolean;
   identity: ReturnType<AuthClient["getIdentity"]>;
   isLoggedIn: true;
 }
 
 export interface LoggedOutIdentity {
   login: () => Promise<void>;
+  loading: boolean;
   isLoggedIn: false;
 }
 
@@ -26,6 +29,7 @@ export const InternetIdentityProvider: React.FC<{
   const [authClient, setAuthClient] = useState<AuthClient | undefined>();
   const [value, setValue] = useState<InternetIdentityUser>({
     isLoggedIn: false,
+    loading: true,
     login: () => nullPromise,
   });
 
@@ -44,25 +48,28 @@ export const InternetIdentityProvider: React.FC<{
           setValue({
             isLoggedIn: true,
             identity,
+            loading: false,
             logout: () =>
               authClient.logout().then(() => window.location.reload()),
           });
         } else {
           setValue({
+            loading: false,
             isLoggedIn: false,
             login: () =>
-              authClient
-                .login({
-                  // identityProvider: `http://127.0.0.1:8000/?canisterId=${process.env.INTERNET_IDENTITY_CANISTER_ID}`,
-                  identityProvider: `http://${process.env.INTERNET_IDENTITY_CANISTER_ID}.localhost:8000/#authorize`,
-                  onSuccess: () => {
-                    console.log("ON SUCCESS");
-                  },
-                  onError: () => {
-                    console.log("ON ERROR");
-                  },
-                })
-                .then(() => window.location.reload()),
+              authClient.login({
+                ...(process.env.DFX_NETWORK === "ic"
+                  ? {}
+                  : {
+                      identityProvider: `http://localhost:8000/?canisterId=${process.env.INTERNET_IDENTITY_CANISTER_ID}`,
+                    }),
+                onSuccess: () => {
+                  window.location.reload();
+                },
+                onError: (e) => {
+                  console.error("Error while trying to authenticate", e);
+                },
+              }),
           });
         }
       }

@@ -4,6 +4,8 @@ Submission for Supernova (Internet Computer Web3 Hackathon – June 2022)
 You can find the submission and full description
 [here](https://devpost.com/software/honest-ticket-machine).
 
+See the app running live on IC [here](https://mymdv-biaaa-aaaan-qam2q-cai.ic0.app/).
+
 ## Development
 
 We use `yarn` to manage all the dependencies. Run:
@@ -27,10 +29,5 @@ Alternatively, if you want to take advantage of the live-reloading capabilities
 of Next.js, you can run:
 
 ```
-yarn workspace @honest-ticket-machine/web-client run dev
+yarn start:web
 ```
-
-**TODO** replace the main package.json scripts with these commands.
-
-**WARNING** deploying to mainnet is currently prohibitively expensive, this
-needs to be re-evaluated and optimised for future builds.

@@ -7,7 +7,7 @@
     },
     "website": {
       "frontend": {
-        "entrypoint": "web-client/out/index.html"
+        "entrypoint": "index.html"
       },
       "source": ["src/web-client/out"],
       "type": "assets"

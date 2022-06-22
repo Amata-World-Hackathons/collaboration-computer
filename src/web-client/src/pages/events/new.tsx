@@ -5,12 +5,19 @@ import Head from "next/head";
 import { useRouter } from "next/router";
 import { FormProvider, useForm } from "react-hook-form";
 import Link from "next/link";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useHonestActor } from "@src/context/HonestActor";
-import { Universe } from "../../../../declarations/honest/honest.did";
+import {
+  MintingRequest,
+  Universe,
+} from "../../../../declarations/honest/honest.did";
 import { PLACEHOLDER_IMAGE_URL } from "@src/constants";
 import { useActorQuery } from "@src/utils/ActorUtils";
 import { formatFractionalICP } from "@src/utils/Formatting";
+import { useICPLedger } from "@src/context/ICPLedger";
+import { AccountIdentifier, ICP } from "@dfinity/nns";
+import { useLoggedInIdentity } from "@src/context/LoggedInIdentity";
+import applyPrivatePageLayout from "@src/layouts/PrivatePageLayout";
 
 const STEP_CONNECT_UNIVERSE = "1";
 const STEP_EVENT_DETAILS = "2";
@@ -30,6 +37,8 @@ const NewEventsPage: AppPage = () => {
   const [didCreateUniverse, setDidCreateUniverse] = useState(false);
   const [connections, setConnections] = useState<bigint[]>([]);
 
+  const internetIdentity = useLoggedInIdentity();
+  const ledger = useICPLedger();
   const honest = useHonestActor();
 
   const universesResult = useActorQuery({
@@ -69,7 +78,7 @@ const NewEventsPage: AppPage = () => {
               console.log("Creating event", data);
               setProcessing(true);
 
-              const res = await honest.mint({
+              const mintingRequest: MintingRequest = {
                 event: [
                   {
                     name: data.name,
@@ -97,9 +106,24 @@ const NewEventsPage: AppPage = () => {
                       },
                     ]
                   : [],
-              });
+              };
 
-              console.log("Receipt", res);
+              // Uncomment to make actual transfers
+              // const estimate = await honest.estimateMintingCost(mintingRequest);
+              // const paymentAccountId = await honest.getPaymentAccountId();
+              // const paymentAccountIdHex = [...paymentAccountId]
+              //   .map((a) => a.toString(16).padStart(2, "0"))
+              //   .join("");
+              // const transferResponse = await ledger.transfer({
+              //   to: AccountIdentifier.fromHex(paymentAccountIdHex),
+              //   amount: ICP.fromE8s(estimate.Ok!.total as bigint),
+              //   memo: BigInt(1),
+              //   fee: BigInt(10_000),
+              // });
+
+              const res = await honest.mint(mintingRequest);
+
+              console.log("Minting response", res);
 
               router.push(`/events/${(res as any).Ok.eventTokenId[0]}`);
             })}
@@ -457,6 +481,15 @@ const NewEventsPage: AppPage = () => {
               BigInt(connections.length) * DEFAULT_USAGE_TERMS.fixedFee
           )}
         </p>
+
+        <div className="alert alert-warning p-4 text-sm text-left">
+          <div>
+            <span>
+              Payments through the ledger have been disabled, so you will not be
+              charged for any transactions on this app
+            </span>
+          </div>
+        </div>
       </section>
     );
   }
@@ -580,5 +613,7 @@ const NewEventsPage: AppPage = () => {
     );
   }
 };
+
+NewEventsPage.applyLayout = applyPrivatePageLayout;
 
 export default NewEventsPage;

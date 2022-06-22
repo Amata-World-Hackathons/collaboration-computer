@@ -1,4 +1,4 @@
-// import Ledger "canister:ledger";
+import Ledger "canister:ledger";
 
 import Principal "mo:base/Principal";
 import List "mo:base/List";
@@ -154,11 +154,18 @@ actor Honest {
         });
     };
 
-    // public shared({ caller }) func mint(request: Types.MintingRequest) : async Types.MintingReceipt {
-    public func mint(request: Types.MintingRequest) : async Types.MintingReceipt {
-        // let holdingAccount = Account.accountIdentifier(Principal.fromActor(Honest), Account.principalToSubaccount(caller));
+    public shared query ({ caller }) func getPaymentAccountId() : async Account.AccountIdentifier {
+        getPaymentAccountIdFor(caller)
+    };
 
-        // let heldBalance = await Ledger.account_balance({ account = holdingAccount });
+    func getPaymentAccountIdFor(principal: Principal) : Account.AccountIdentifier {
+        Account.accountIdentifier(Principal.fromActor(Honest), Account.principalToSubaccount(principal));
+    };
+
+    public shared({ caller }) func mint(request: Types.MintingRequest) : async Types.MintingReceipt {
+        let holdingAccount = getPaymentAccountIdFor(caller);
+
+        let heldBalance = await Ledger.account_balance({ account = holdingAccount });
 
         let estimatedCostResult = await estimateMintingCost(request);
 
@@ -173,8 +180,7 @@ actor Honest {
                 // };
 
                 var eventId : ?Types.TokenId = null;
-                // let owner = caller;
-                let owner = Principal.fromActor(Honest);
+                let owner = caller;
 
                 switch (request.event) {
                     case null { };
@@ -220,7 +226,7 @@ actor Honest {
                     };
                 };
 
-                // for (item in List.toArray(estimatedCost.items).vals()) {
+                // for (item in estimatedCost.items.vals()) {
                 //     transactionId += 1;
                 //     let res = await Ledger.transfer({
                 //         memo = Nat64.fromNat(transactionId);
@@ -239,6 +245,8 @@ actor Honest {
                 //         case _ {};
                 //     };
                 // };
+
+                // TODO refund remaining balance to the caller?
 
                 return #Ok({
                     id = transactionId;
